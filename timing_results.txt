@@ -1,0 +1,32 @@
+On 4090:
+
+Rodas5Generic and GRKT4
+
+compute_matter_power
+2.12 s ± 1.35 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+2.17 s ± 681 µs per loop (mean ± std. dev. of 7 runs, 1 loop each)
+2.13 s ± 360 µs per loop (mean ± std. dev. of 7 runs, 1 loop each)
+
+derivative
+4.38 s ± 881 µs per loop (mean ± std. dev. of 7 runs, 1 loop each)
+
+Rodas5WithoutTransformation and GRKT4
+
+compute_matter_power
+2.22 s ± 2.12 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+2.22 s ± 470 µs per loop (mean ± std. dev. of 7 runs, 1 loop each)
+2.27 s ± 1.21 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+
+Maybe worse under autodiff? plot seems to match up worse with FD on lower part
+
+Rodas5Explicit Transformed
+
+compute_matter_power
+2.05 s ± 1 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+
+very nice under autodiff, see picture
+
+Kvaerno5 and GRKT4
+5.06 s ± 1.09 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+5.06 s ± 1.12 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+
