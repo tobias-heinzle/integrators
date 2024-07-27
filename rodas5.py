@@ -114,7 +114,7 @@ _ErrorEstimate: TypeAlias = None
 _SolverState: TypeAlias = None
 
 
-class Rodas5Batched(AbstractAdaptiveSolver):
+class Rodas5(AbstractAdaptiveSolver):
     r"""Rodas5 method.
     """
 
@@ -151,7 +151,7 @@ class Rodas5Batched(AbstractAdaptiveSolver):
     ) -> tuple[Y, _ErrorEstimate, DenseInfo, _SolverState, RESULTS]:
         del solver_state, made_jump
 
-        n  = y0[0].shape[0]
+        n  = y0.shape[0]
         dt = terms.contr(t0, t1)
 
         # Precalculations
@@ -193,19 +193,14 @@ class Rodas5Batched(AbstractAdaptiveSolver):
 
         # calculate and invert W
         I  = jnp.eye(n)
+        J  = jax.jacfwd(lambda y: terms.vf(t=t0, y=y, args=args))(y0)
 
-        def f( _t, _y, _a):
-            return terms.vf(_t,
-                            jnp.stack([_y] + [jnp.zeros_like(_y)]*(n-1)), 
-                            jnp.stack([_a] + [jnp.zeros_like(_a)]*(n-1)))[0]
+        W  = I/dtgamma - J
 
-        dt_f_batched = jax.vmap(lambda _t, _y, _a: jax.jacobian(lambda __t: f(__t, _y, _a))(_t), (None, 0, 0)) 
-        jac_f_batched = jax.vmap(lambda _t, _y, _a: jax.jacobian(lambda __y: f(_t, __y, _a))(_y),(None, 0, 0)) 
-        lu_batched = jax.vmap(lambda a: jax.scipy.linalg.lu_factor(I/dtgamma - a), (0,))
+        LU, piv = jax.scipy.linalg.lu_factor(W)
 
-        dT = dt_f_batched(t0, y0, args)
-        jac_blocks = jac_f_batched(t0, y0, args)
-        LU, piv = lu_batched(jac_blocks)        
+        # time derivative of vector field
+        dT = jax.jacfwd(lambda t: terms.vf(t=t, y=y0, args=args))(t0)
 
         dy1 = terms.vf(t=t0, y=y0, args=args)
         rhs = dy1 + dtd1*dT
